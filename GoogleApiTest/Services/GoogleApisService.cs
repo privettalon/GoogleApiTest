@@ -33,13 +33,21 @@ namespace GoogleApiTest.Services
             SpreadsheetsServiceHelper spreadsheetsService = new SpreadsheetsServiceHelper(userCredential);
 
             List<FileModel> filesList = driveService.GetFileModels();
-            spreadsheetsService.WriteFilesList(filesList);
+            spreadsheetsService.CreateList(filesList);
 
-            PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromMinutes(15));
+            PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(60));
             while (await timer.WaitForNextTickAsync())
             {
-                filesList = driveService.GetFileModels();
-                spreadsheetsService.WriteFilesList(filesList);
+                List<FileModel> newfilesList = driveService.GetFileModels();
+                if (newfilesList.Except(filesList).Any())
+                {
+                    if (!filesList.Except(newfilesList).Any())
+                    {
+                        spreadsheetsService.AddNewFilesToList(newfilesList.Except(filesList).ToList());
+                    }
+                    spreadsheetsService.UpdateList(newfilesList);
+                    filesList = newfilesList;
+                }
             }
         }
     }

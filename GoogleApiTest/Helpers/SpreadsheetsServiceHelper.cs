@@ -23,7 +23,7 @@ namespace GoogleApiTest.Helpers
             });
         }
 
-        public void WriteFilesList(List<FileModel> files)
+        public void CreateList(List<FileModel> files)
         {
             if (files != null || files.Count != 0)
             {
@@ -36,11 +36,22 @@ namespace GoogleApiTest.Helpers
                     spreadsheetId = createResponse.SpreadsheetId;
                 }
 
-                ClearSheet();
                 AddColumnsTitles();
-                AddColumnsValues(files);
+                AddColumnsValues(files, range);
             }
             
+        }
+        public void  UpdateList(List<FileModel> files)
+        {
+            ClearSheet();
+            AddColumnsTitles();
+            AddColumnsValues(files, range);
+        }
+
+        public void AddNewFilesToList(List<FileModel> files)
+        {
+            string appendRange = GetAppendRange();
+            AddColumnsValues(files, appendRange);
         }
 
         private void ClearSheet()
@@ -63,7 +74,7 @@ namespace GoogleApiTest.Helpers
             getSpreadsheetsValueRequest.Execute();
         }
 
-        private void AddColumnsValues(List<FileModel> files)
+        private void AddColumnsValues(List<FileModel> files, string range)
         {
             ValueRange addedData = new ValueRange()
             {
@@ -73,6 +84,14 @@ namespace GoogleApiTest.Helpers
             AppendRequest getSpreadsheetsValueRequest = sheetsService.Spreadsheets.Values.Append(addedData, spreadsheetId, range);
             getSpreadsheetsValueRequest.ValueInputOption = AppendRequest.ValueInputOptionEnum.USERENTERED;
             getSpreadsheetsValueRequest.Execute();
+        }
+
+        private string GetAppendRange()
+        {
+            GetRequest getRequest = sheetsService.Spreadsheets.Values.Get(spreadsheetId, range);
+            ValueRange response = getRequest.Execute();
+            IList<IList<object>> values = response.Values;
+            return $"A" + (values.Count+1) + ":E" + (values.Count+1);
         }
     }
 }
