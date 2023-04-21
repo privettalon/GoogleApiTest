@@ -35,7 +35,7 @@ namespace GoogleApiTest.Services
             List<FileModel> filesList = driveService.GetFileModels();
             spreadsheetsService.CreateList(filesList);
 
-            PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(60));
+            PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromMinutes(15));
             while (await timer.WaitForNextTickAsync())
             {
                 List<FileModel> newfilesList = driveService.GetFileModels();
